@@ -1867,6 +1867,7 @@ nvm_get_arch() {
     x86_64 | amd64) NVM_ARCH="x64" ;;
     i*86) NVM_ARCH="x86" ;;
     aarch64) NVM_ARCH="arm64" ;;
+    loongarch64) NVM_ARCH="loong64" ;;
     *) NVM_ARCH="${HOST_ARCH}" ;;
   esac
 
@@ -1875,6 +1876,12 @@ nvm_get_arch() {
   if [ "$(uname)" = "Linux" ] && [ "${NVM_ARCH}" = arm64 ] && [ "$(od -An -t x1 -j 4 -N 1 "${L#*-> }")" = ' 01' ]; then
     NVM_ARCH=armv7l
     HOST_ARCH=armv7l
+  fi
+
+  L=$(ls -dl /sbin/init 2>/dev/null) # if /sbin/init is 32bit executable
+  if [ "$(uname)" = "Linux" ] && [ "${NVM_ARCH}" = loong64 ] && [ "$(od -An -t x1 -j 4 -N 1 "${L#*-> }")" = ' 01' ]; then
+    NVM_ARCH=loong64
+    HOST_ARCH=loongarch64
   fi
 
   nvm_echo "${NVM_ARCH}"
@@ -1932,8 +1939,8 @@ nvm_is_merged_node_version() {
 
 nvm_get_mirror() {
   case "${1}-${2}" in
-    node-std) nvm_echo "${NVM_NODEJS_ORG_MIRROR:-https://nodejs.org/dist}" ;;
-    iojs-std) nvm_echo "${NVM_IOJS_ORG_MIRROR:-https://iojs.org/dist}" ;;
+    node-std) nvm_echo "${NVM_NODEJS_ORG_MIRROR:-http://ftp.loongnix.cn/nodejs/LoongArch/dist}" ;;
+#    iojs-std) nvm_echo "${NVM_IOJS_ORG_MIRROR:-https://iojs.org/dist}" ;;
     *)
       nvm_err 'unknown type of node.js or io.js release'
       return 1
